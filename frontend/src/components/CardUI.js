@@ -8,14 +8,14 @@ function CardUI()
     var firstName = ud.firstName;
     var lastName = ud.lastName;
     
-    var card;
-    var search;
+    var card = '';
+    var search = '';
     
     const [message,setMessage] = useState('');
     const [searchResults,setResults] = useState('');
     const [cardList,setCardList] = useState('');
     
-    const app_name = 'cop4331-4'
+    const app_name = 'cop-4331'
     function buildPath(route)
     {
         if (process.env.NODE_ENV === 'production') 
@@ -42,7 +42,9 @@ function CardUI()
             {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
             
             var txt = response.text();
+            console.log(txt);
             var res = JSON.parse(txt);
+            console.log(res);
             
             if( res.error.length > 0 )
             {
