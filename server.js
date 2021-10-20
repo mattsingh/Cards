@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const MongoClient = require('mongodb').MongoClient;
 const app = express();
+var api = require('./api.js');
 require('dotenv').config();
 
 const uri = process.env.MONGODB_URI;
@@ -11,7 +12,6 @@ client.connect();
 
 const path = require('path');
 const PORT = process.env.PORT || 5000;
-
 
 app.set('port', PORT);
 
@@ -37,6 +37,8 @@ app.listen(PORT, () => {
 	console.log('Server listening on port ' + PORT);
 });
 
+api.setApp( app, client );
+
 ///////////////////////////////////////////////////
 // For Heroku deployment
 
@@ -51,83 +53,3 @@ if (process.env.NODE_ENV === 'production')
     res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'));
   });
 }
-
-
-app.post('/api/addcard', async (req, res, next) =>
-{
-	// incoming: userId, color
-	// outgoing: error
-	
-	const { userId, card } = req.body;
-
-	const newCard = {Card:card,UserId:userId};
-	var error = '';
-
-	try
-	{
-		const db = client.db();
-		const result = db.collection('Cards').insertOne(newCard);
-	}
-	catch(e)
-	{
-		error = e.toString();
-	}
-
-	cardList.push( card );
-
-	var ret = { error: error };
-	res.status(200).json(ret);
-});
-
-app.post('/api/login', async (req, res, next) => 
-{
-	// incoming: login, password
-	// outgoing: id, firstName, lastName, error
-	
- var error = '';
-
-	const { login, password } = req.body;
-
-	const db = client.db();
-	const results = await db.collection('Users').find({Login:login,Password:password}).toArray();
-
-	var id = -1;
-	var fn = '';
-	var ln = '';
-
-	if( results.length > 0 )
-	{
-		id = results[0].UserId;
-		fn = results[0].FirstName;
-		ln = results[0].LastName;
-	}
-
-	var ret = { id:id, firstName:fn, lastName:ln, error:''};
-	res.status(200).json(ret);
-});
-
-
-app.post('/api/searchcards', async (req, res, next) =>
-{
-	// incoming: userId, search
-	// outgoing: results[], error
-
-	var error = '';
-
-	const { userId, search } = req.body;
-
-	var _search = search.trim();
-	
-	const db = client.db();
-	const results = await db.collection('Cards').find({"Card":{$regex:_search+'.*', $options:'r'}}).toArray();
-	
-	var _ret = [];
-	for( var i=0; i<results.length; i++ )
-	{
-		_ret.push( results[i].Card );
-	}
-	
-	var ret = {results:_ret, error:error};
-	res.status(200).json(ret);
-});
-
