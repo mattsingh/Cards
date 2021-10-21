@@ -1,8 +1,12 @@
 import React, {useState} from 'react';
-var bp = require('./Path.js');
+import axios from 'axios';
 
 function CardUI()
 {
+    var bp = require('./Path.js');
+    var storage = require('../tokenStorage.js');
+    const jwt = require("jsonwebtoken");
+
     var _ud = localStorage.getItem('user_data');
     var ud = JSON.parse(_ud);
     var userId = ud.id;
@@ -16,8 +20,6 @@ function CardUI()
     const [searchResults,setResults] = useState('');
     const [cardList,setCardList] = useState('');
 
-    var storage = require('../tokenStorage.js');
-    const jwt = require("jsonwebtoken");
 
     
     const addCard = async event => 
@@ -28,13 +30,21 @@ function CardUI()
         var obj = {userId:userId,card:card.value,jwtToken:tok};
         var js = JSON.stringify(obj);
         
-        try
+        var config = 
         {
-            const response = await fetch(bp.buildPath('api/addcard'),
-            {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
-            
-            var txt = await response.text();
-            var res = JSON.parse(txt);
+            method: 'post',
+            url: bp.buildPath('api/addcard'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+
+        axios(config).then(function (response) {
+            // var txt = response.text();
+            // var res = JSON.parse(txt);
+            var res = response.data;
             
             if( res.error.length > 0 )
             {
@@ -44,12 +54,9 @@ function CardUI()
             {
                 setMessage('Card has been added');
             }
-        }
-        catch(e)
-        {
-            setMessage(e.toString());
-        }
-        
+        }).catch(function (error) {
+            setMessage(error.toString());
+        });
     };
     
     
@@ -61,13 +68,21 @@ function CardUI()
         var obj = {userId:userId,search:search.value,jwtToken:tok};
         var js = JSON.stringify(obj);
         
-        try
+        var config = 
         {
-            const response = await fetch(bp.buildPath('api/searchcards'),
-            {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
-            
-            var txt = await response.text();
-            var res = JSON.parse(txt);
+            method: 'post',
+            url: bp.buildPath('api/searchcards'),	
+            headers: 
+            {
+                'Content-Type': 'application/json'
+            },
+            data: js
+        };
+
+        axios(config).then(function (response) {
+            // var txt = await response.text();
+            // var res = JSON.parse(txt);
+            var res = response.data;
             var _results = res.results;
             var resultText = '';
             for( var i=0; i<_results.length; i++ )
@@ -80,12 +95,10 @@ function CardUI()
             }
             setResults('Card(s) have been retrieved');
             setCardList(resultText);
-        }
-        catch(e)
-        {
-            alert(e.toString());
-            setResults(e.toString());
-        }
+        }).catch(function (error) {
+            alert(error.toString());
+            setResults(error.toString());
+        });
     };
     
     
