@@ -15,12 +15,17 @@ function CardUI()
     const [message,setMessage] = useState('');
     const [searchResults,setResults] = useState('');
     const [cardList,setCardList] = useState('');
+
+    var storage = require('../tokenStorage.js');
+    const jwt = require("jsonwebtoken");
+
     
     const addCard = async event => 
     {
         event.preventDefault();
         
-        var obj = {userId:userId,card:card.value};
+        var tok = storage.retrieveToken();
+        var obj = {userId:userId,card:card.value,jwtToken:tok};
         var js = JSON.stringify(obj);
         
         try
@@ -28,10 +33,8 @@ function CardUI()
             const response = await fetch(bp.buildPath('api/addcard'),
             {method:'POST',body:js,headers:{'Content-Type': 'application/json'}});
             
-            var txt = response.text();
-            console.log(txt);
+            var txt = await response.text();
             var res = JSON.parse(txt);
-            console.log(res);
             
             if( res.error.length > 0 )
             {
@@ -54,7 +57,8 @@ function CardUI()
     {
         event.preventDefault();
         
-        var obj = {userId:userId,search:search.value};
+        var tok = storage.retrieveToken();
+        var obj = {userId:userId,search:search.value,jwtToken:tok};
         var js = JSON.stringify(obj);
         
         try
