@@ -1,14 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const MongoClient = require('mongodb').MongoClient;
+// const MongoClient = require('mongodb').MongoClient;
 const app = express();
 var api = require('./api.js');
 require('dotenv').config();
 
 const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-client.connect();
+const mongoose = require('mongoose');
+mongoose.connect(uri)
+	.then(() => console.log("Mongo DB connected"))
+	.catch(err => console.log(err));
+// const client = new MongoClient(uri);
+// client.connect();
 
 const path = require('path');
 const PORT = process.env.PORT || 5000;
@@ -37,7 +41,7 @@ app.listen(PORT, () => {
 	console.log('Server listening on port ' + PORT);
 });
 
-api.setApp( app, client );
+api.setApp( app, mongoose );
 
 ///////////////////////////////////////////////////
 // For Heroku deployment
